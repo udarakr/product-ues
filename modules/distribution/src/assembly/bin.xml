@@ -40,9 +40,9 @@
                 <exclude>**/registry.xml</exclude>
                 <exclude>**/axis2/axis2.xml</exclude>
                 <!--exclude>**/ciphertool.bat</exclude-->
-                <exclude>**/master-datasources.xml</exclude>
                 <exclude>**/org.wso2.carbon.identity.relyingparty.ui-3.1.0.SNAPSHOT.jar</exclude>
                 <exclude>**/org.wso2.carbon.identity.user.registration.ui-3.1.0.SNAPSHOT.jar</exclude>
+                <exclude>**/tomcat-el-api_7.0.59.wso2v1.jar</exclude>
             </excludes>
         </fileSet>
         <fileSet>
@@ -53,39 +53,12 @@
             </includes>
             <fileMode>755</fileMode>
         </fileSet>
-        <!--<fileSet>
-            <directory>
-                ../p2-profile-gen/target/wso2carbon-core-${carbon.kernel.version}/dbscripts/identity/
-            </directory>
-            <outputDirectory>wso2ds-${pom.version}/dbscripts/identity</outputDirectory>
-            <includes>
-                <include>**/**.sql</include>
-            </includes>
-            <excludes>
-                <exclude>**/oracle.sql</exclude>
-            </excludes>
-        </fileSet>-->
         <!--Multitenancy related file -->
         <fileSet>
             <directory>
                 ../p2-profile-gen/target/wso2carbon-core-${carbon.kernel.version}/repository/conf/multitenancy
             </directory>
             <outputDirectory>wso2ds-${pom.version}/repository/conf/multitenancy</outputDirectory>
-        </fileSet>
-        <fileSet>
-            <directory>../styles/service/src/main/resources/web/styles/css</directory>
-            <outputDirectory>wso2ds-${pom.version}/resources/allthemes/Default/admin</outputDirectory>
-            <includes>
-                <include>**/**.css</include>
-            </includes>
-        </fileSet>
-        <fileSet>
-            <directory>../styles/service/src/main/resources/web/styles/images</directory>
-            <outputDirectory>wso2ds-${pom.version}/resources/allthemes/Default/images</outputDirectory>
-            <includes>
-                <include>**/**.gif</include>
-                <include>**/**.png</include>
-            </includes>
         </fileSet>
         <!-- copy documentation -->
         <fileSet>
@@ -136,11 +109,21 @@
         <!--copy jaxrs web app for OAuth feature-->
         <fileSet>
             <directory>
-                ../p2-profile-gen/target/wso2carbon-core-${carbon.kernel.version}/repository/deployment/server/jaxwebapps
+                ../p2-profile-gen/target/wso2carbon-core-${carbon.kernel.version}/repository/deployment/server/webapps
             </directory>
-            <outputDirectory>${pom.artifactId}-${pom.version}/repository/deployment/server/jaxwebapps</outputDirectory>
+            <outputDirectory>${pom.artifactId}-${pom.version}/repository/deployment/server/webapps</outputDirectory>
             <includes>
-                <include>oauth2endpoints.war</include>
+                <include>oauth2.war</include>
+            </includes>
+        </fileSet>
+        <!--copy web app for application authentication feature -->
+        <fileSet>
+            <directory>
+                ../p2-profile-gen/target/wso2carbon-core-${carbon.kernel.version}/repository/deployment/server/webapps
+            </directory>
+            <outputDirectory>${pom.artifactId}-${pom.version}/repository/deployment/server/webapps</outputDirectory>
+            <includes>
+                <include>authenticationendpoint.war</include>
             </includes>
         </fileSet>
         <fileSet>
@@ -190,18 +173,14 @@
             </includes>
         </fileSet>
         <fileSet>
-            <directory>src/repository/conf/datasources</directory>
-            <outputDirectory>wso2ds-${pom.version}/repository/conf/datasources</outputDirectory>
-            <includes>
-                <include>**/master-datasources.xml</include>
-            </includes>
-        </fileSet>
-        <fileSet>
             <directory>src/repository/resources</directory>
             <outputDirectory>wso2ds-${pom.version}/repository/resources</outputDirectory>
             <includes>
                 <include>*/**</include>
             </includes>
+           <excludes>
+                <exclude>**/shindig/features/**</exclude>
+	       </excludes>
         </fileSet>
         <!--data-bridge configuration-->
         <fileSet>
@@ -209,8 +188,8 @@
             <outputDirectory>wso2ds-${pom.version}/repository/conf/data-bridge</outputDirectory>
         </fileSet>
         <fileSet>
-            <directory>../p2-profile-gen/target/wso2carbon-core-${carbon.version}/lib/runtimes</directory>
-            <outputDirectory>wso2ds-${pom.version}/lib/runtimes/</outputDirectory>
+            <directory>../p2-profile-gen/target/wso2carbon-core-${carbon.kernel.version}/lib/runtimes</directory>
+            <outputDirectory>${pom.artifactId}-${pom.version}/lib/runtimes/</outputDirectory>
             <includes>
                 <include>*/**</include>
             </includes>
@@ -259,6 +238,20 @@
             <outputDirectory>${project.artifactId}-${product.ds.version}/samples/</outputDirectory>
             <includes>
                 <include>**/s0/**</include>
+            </includes>
+        </fileSet>
+        <fileSet>
+            <directory>../components/ues-admin/src/main/resources/web/styles/css</directory>
+            <outputDirectory>${pom.artifactId}-${pom.version}/resources/allthemes/Default/admin</outputDirectory>
+            <includes>
+                <include>**/**</include>
+            </includes>
+        </fileSet>
+        <fileSet>
+            <directory>../components/ues-admin/src/main/resources/web/styles/images</directory>
+            <outputDirectory>${pom.artifactId}-${pom.version}/resources/allthemes/Default/images</outputDirectory>
+            <includes>
+                <include>**/**</include>
             </includes>
         </fileSet>
     </fileSets>
@@ -330,27 +323,6 @@
             <outputDirectory>wso2ds-${pom.version}/repository/conf/multitenancy/</outputDirectory>
             <filtered>true</filtered>
         </file>
-        <!-- Including coordination-client-config.xml file -->
-        <!--file>
-            <source>
-                ../p2-profile-gen/target/wso2carbon-core-${carbon.kernel.version}/repository/conf/etc/coordination-client-config.xml
-            </source>
-            <outputDirectory>wso2ds-${pom.version}/repository/conf/etc</outputDirectory>
-        </file>
-        <file>
-            <source>../p2-profile-gen/target/wso2carbon-core-${carbon.kernel.version}/repository/conf/etc/zoo.cfg
-            </source>
-            <outputDirectory>wso2ds-${pom.version}/repository/conf/etc</outputDirectory>
-        </file-->
-
-        <!-- Including log4j.properties file -->
-        <!--        <file>
-            <source>
-                ../p2-profile-gen/target/wso2carbon-core-${carbon.kernel.version}/repository/conf/log4j.properties
-            </source>
-            <outputDirectory>wso2ds-${pom.version}/repository/conf/
-            </outputDirectory>
-        </file>-->
         <file>
             <source>target/wso2carbon-core-${carbon.kernel.version}/repository/conf/axis2/axis2.xml</source>
             <outputDirectory>wso2ds-${pom.version}/repository/conf/axis2/</outputDirectory>
@@ -375,17 +347,6 @@
             <filtered>true</filtered>
             <fileMode>755</fileMode>
         </file>
-        <!--<file>
-            <source>target/wso2carbon-core-${carbon.kernel.version}/bin/wso2server.bat</source>
-            <outputDirectory>wso2ds-${pom.version}/bin/</outputDirectory>
-            <filtered>true</filtered>
-            <fileMode>644</fileMode>
-        </file>-->
-        <!--file>
-            <source>conf/claim-config.xml</source>
-            <outputDirectory>wso2ds-${pom.version}/repository/conf/</outputDirectory>
-            <fileMode>644</fileMode>
-        </file-->
         <file>
             <source>
                 ../p2-profile-gen/target/wso2carbon-core-${carbon.kernel.version}/repository/conf/claim-config.xml
@@ -400,20 +361,49 @@
             <outputDirectory>wso2ds-${pom.version}/repository/conf/identity</outputDirectory>
             <fileMode>644</fileMode>
         </file>
-        <!--<file>
-            <source>src/repository/database/WSO2IDENTITY_DB.h2.db</source>
-            <outputDirectory>wso2ds-${pom.version}/repository/database</outputDirectory>
+        <file>
+            <source>../p2-profile-gen/target/wso2carbon-core-${carbon.kernel.version}/bin/ciphertool.sh</source>
+            <outputDirectory>${pom.artifactId}-${pom.version}/bin</outputDirectory>
+            <fileMode>755</fileMode>
+        </file>
+        <file>
+            <source>../p2-profile-gen/target/wso2carbon-core-${carbon.kernel.version}/bin/ciphertool.bat</source>
+            <outputDirectory>${pom.artifactId}-${pom.version}/bin</outputDirectory>
+        </file>
+        <file>
+            <source>../p2-profile-gen/target/wso2carbon-core-${carbon.kernel.version}/lib/org.wso2.ciphertool-${cipher.tool.version}.jar</source>
+            <outputDirectory>${pom.artifactId}-${pom.version}/lib</outputDirectory>
+        </file>
+		<file>
+            <source>../p2-profile-gen/target/wso2carbon-core-${carbon.kernel.version}/repository/conf/tomcat/webapp-classloading.xml</source>
+            <outputDirectory>${pom.artifactId}-${pom.version}/repository/conf/tomcat</outputDirectory>
+            <filtered>true</filtered>
             <fileMode>644</fileMode>
-        </file>-->
-        <!--        <file>
-            <source>conf/wso2is-user-certs.jks</source>
-            <outputDirectory>wso2ds-${pom.version}/repository/resources/security/</outputDirectory>
+        </file>
+        <file>
+            <source>../p2-profile-gen/target/wso2carbon-core-${carbon.kernel.version}/repository/conf/tomcat/webapp-classloading-environments.xml</source>
+            <outputDirectory>${pom.artifactId}-${pom.version}/repository/conf/tomcat</outputDirectory>
+            <filtered>true</filtered>
             <fileMode>644</fileMode>
-        </file>-->
-        <!--       <file>
-            <source>conf/userRP.jks</source>
-            <outputDirectory>wso2ds-${pom.version}/repository/resources/security/</outputDirectory>
+        </file>
+        <file>
+            <source>../p2-profile-gen/target/wso2carbon-core-${carbon.kernel.version}/repository/conf/tomcat/context.xml</source>
+            <outputDirectory>${pom.artifactId}-${pom.version}/repository/conf/tomcat</outputDirectory>
+            <filtered>true</filtered>
             <fileMode>644</fileMode>
-        </file>-->
+        </file>
+        <file>
+            <source>../p2-profile-gen/target/wso2carbon-core-${carbon.kernel.version}/repository/resources/identity/pages/samlsso_response.html</source>
+            <outputDirectory>${pom.artifactId}-${pom.version}/repository/resources/identity/pages</outputDirectory>
+            <fileMode>644</fileMode>
+        </file>
+        <file>
+            <source>../p2-profile-gen/target/wso2carbon-core-${carbon.kernel.version}/repository/conf/identity/EndpointConfig.properties</source>
+            <outputDirectory>${pom.artifactId}-${pom.version}/repository/conf/identity</outputDirectory>
+        </file>
+        <file>
+            <source>../p2-profile-gen/target/wso2carbon-core-${carbon.kernel.version}/repository/conf/identity/sso-idp-config.xml</source>
+            <outputDirectory>${pom.artifactId}-${pom.version}/repository/conf/identity</outputDirectory>
+        </file>
     </files>
 </assembly>

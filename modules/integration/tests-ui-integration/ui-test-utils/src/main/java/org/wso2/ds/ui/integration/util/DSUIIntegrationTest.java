@@ -22,6 +22,7 @@ import ds.integration.tests.common.domain.DSIntegrationTest;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openqa.selenium.By;
+import org.openqa.selenium.Dimension;
 import org.openqa.selenium.support.ui.WebDriverWait;
 import org.wso2.carbon.automation.engine.context.TestUserMode;
 import org.wso2.carbon.automation.extensions.selenium.BrowserManager;
@@ -112,6 +113,7 @@ public abstract class DSUIIntegrationTest extends DSIntegrationTest {
         for (String windowHandle : driver.getWindowHandles()) {
             if (!windowHandle.equals(currentWindowHandle)) {
                 driver.switchTo().window(windowHandle);
+                driver.manage().window().setSize(new Dimension(1920, 1080));
                 break;
             }
         }
@@ -149,6 +151,26 @@ public abstract class DSUIIntegrationTest extends DSIntegrationTest {
         driver.findElement(By.name("password")).clear();
         driver.findElement(By.name("password")).sendKeys(pwd);
         driver.findElement(By.cssSelector(".ues-signin")).click();
+    }
+
+    /**
+     * To login to Dashboard server when SSO is enabled
+     *
+     * @param userName user name
+     * @param pwd      password
+     * @throws javax.xml.xpath.XPathExpressionException,InterruptedException
+     */
+    public void loginWithSSO(String userName, String pwd) throws Exception {
+        String fullUrl = "";
+        fullUrl = getBaseUrl() + DS_SUFFIX;
+        driver = getDriver();
+
+        driver.get(fullUrl);
+        driver.findElement(By.name("username")).clear();
+        driver.findElement(By.name("username")).sendKeys(userName);
+        driver.findElement(By.name("password")).clear();
+        driver.findElement(By.name("password")).sendKeys(pwd);
+        driver.findElement(By.tagName("button")).click();
     }
 
     /**
@@ -210,7 +232,7 @@ public abstract class DSUIIntegrationTest extends DSIntegrationTest {
         driver.findElement(By.id("ues-dashboard-description")).clear();
         driver.findElement(By.id("ues-dashboard-description")).sendKeys(description);
         driver.findElement(By.id("ues-dashboard-create")).click();
-        selectLayout("single-column");
+        selectLayout("default-grid");
         redirectToLocation("portal", "dashboards");
     }
 
