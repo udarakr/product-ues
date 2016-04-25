@@ -38,6 +38,7 @@
                 <exclude>**/version.txt</exclude>
                 <exclude>**/carbon.xml</exclude>
                 <exclude>**/registry.xml</exclude>
+                <exclude>**/log4j.properties</exclude>
                 <exclude>**/axis2/axis2.xml</exclude>
                 <!--exclude>**/ciphertool.bat</exclude-->
                 <exclude>**/org.wso2.carbon.identity.relyingparty.ui-3.1.0.SNAPSHOT.jar</exclude>
@@ -238,6 +239,15 @@
             <outputDirectory>${project.artifactId}-${product.ds.version}/samples/</outputDirectory>
             <includes>
                 <include>**/s0/**</include>
+                <include>**/s1/**</include>
+                <include>**/s2/**</include>
+            </includes>
+        </fileSet>
+        <fileSet>
+            <directory>../jmeter-scripts</directory>
+            <outputDirectory>${project.artifactId}-${product.ds.version}/jmeter-scripts/</outputDirectory>
+            <includes>
+                <include>**/**</include>
             </includes>
         </fileSet>
         <fileSet>
@@ -317,6 +327,23 @@
             <source>src/repository/conf/registry.xml</source>
             <outputDirectory>wso2ds-${pom.version}/repository/conf/</outputDirectory>
             <filtered>true</filtered>
+        </file>
+        <file>
+	    <source>../p2-profile-gen/target/wso2carbon-core-${carbon.kernel.version}/repository/conf/event-broker.xml</source>
+	    <outputDirectory>wso2ds-${pom.version}/repository/conf/</outputDirectory>
+	    <filtered>true</filtered>
+            <fileMode>644</fileMode>
+        </file>
+        <file>
+            <source>../p2-profile-gen/target/wso2carbon-core-${carbon.kernel.version}/repository/conf/identity/application-authentication.xml</source>
+            <outputDirectory>wso2ds-${pom.version}/repository/conf/identity/</outputDirectory>
+            <filtered>true</filtered>
+            <fileMode>644</fileMode>
+        </file>
+        <file>
+            <source>src/repository/conf/log4j.properties</source>
+            <outputDirectory>wso2ds-${pom.version}/repository/conf/</outputDirectory>
+            <fileMode>644</fileMode>
         </file>
         <file>
             <source>src/repository/conf/multitenancy/cloud-services-desc.xml</source>
@@ -404,6 +431,10 @@
         <file>
             <source>../p2-profile-gen/target/wso2carbon-core-${carbon.kernel.version}/repository/conf/identity/sso-idp-config.xml</source>
             <outputDirectory>${pom.artifactId}-${pom.version}/repository/conf/identity</outputDirectory>
+        </file>
+        <file>
+            <source>../p2-profile-gen/target/wso2carbon-core-${carbon.kernel.version}/repository/conf/etc/logging-config.xml</source>
+            <outputDirectory>${pom.artifactId}-${pom.version}/repository/conf/etc/</outputDirectory>
         </file>
     </files>
 </assembly>

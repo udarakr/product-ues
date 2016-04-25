@@ -1,0 +1,79 @@
+{
+  "id": "chat-dashboard",
+  "title": "Chat Dashboard",
+  "description": "Sample application to demonstrate how to create gadgets with web sockets.",
+  "permissions": {
+    "viewers": [
+      "Internal/everyone"
+    ],
+    "editors": [
+      "Internal/everyone"
+    ]
+  },
+  "pages": [
+    {
+      "id": "landing",
+      "title": "Home",
+      "layout": {
+        "content": {
+          "loggedIn": {
+            "blocks": [
+              {
+                "id": "b",
+                "x": 3,
+                "y": 0,
+                "width": 6,
+                "height": 3,
+                "banner": false
+              }
+            ]
+          }
+        },
+        "fluidLayout": false
+      },
+      "isanon": false,
+      "content": {
+        "default": {
+          "b": [
+            {
+              "id": "79nh0hvh86vcmcxr",
+              "content": {
+                "id": "dummy-chat",
+                "title": "Dummy Chat",
+                "type": "gadget",
+                "thumbnail": "store://gadget/dummy-chat/index.png",
+                "settings": {
+                  "personalize": true
+                },
+                "data": {
+                  "url": "store://gadget/dummy-chat/index.xml"
+                },
+                "description": "This shows the integration with websockets",
+                "styles": {
+                  "title": "Dummy Chat",
+                  "borders": true
+                },
+                "options": {},
+                "locale_titles": {}
+              }
+            }
+          ]
+        },
+        "anon": {}
+      }
+    }
+  ],
+  "identityServerUrl": "",
+  "accessTokenUrl": "",
+  "apiKey": "",
+  "apiSecret": "",
+  "theme": "",
+  "isUserCustom": false,
+  "isEditorEnable": true,
+  "banner": {
+    "globalBannerExists": false,
+    "customBannerExists": false
+  },
+  "landing": "landing",
+  "isanon": false
+}

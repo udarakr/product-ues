@@ -1,5 +1,5 @@
-/*
- * Copyright 2005-2015 WSO2, Inc. (http://wso2.com)
+/**
+ * Copyright (c) 2016, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.wso2.ds.ui.integration.test.login;
 
 import ds.integration.tests.common.domain.DSIntegrationTestConstants;
@@ -31,11 +30,6 @@ import java.io.FileReader;
 import java.io.PrintWriter;
 
 public class LoginPortalSSOTest extends DSUIIntegrationTest {
-
-    private String carbonHome;
-    private String systemResourceLocation;
-    private String designerFilePath;
-
     /**
      * Initialize the class
      */
@@ -54,19 +48,6 @@ public class LoginPortalSSOTest extends DSUIIntegrationTest {
     }
 
     /**
-     * Setup the testing environment
-     * @throws Exception
-     */
-    @BeforeClass(alwaysRun = true)
-    public void setUp() throws Exception {
-        this.carbonHome = FrameworkPathUtil.getCarbonHome();
-        this.systemResourceLocation = FrameworkPathUtil.getSystemResourceLocation();
-        this.designerFilePath = carbonHome + File.separator + "repository" + File.separator + "deployment" +
-                File.separator + "server" + File.separator + "jaggeryapps" + File.separator + "portal" +
-                File.separator + "configs" + File.separator + "designer.json";
-    }
-
-    /**
      * Test login when sso is enabled
      * @throws Exception
      */
@@ -74,11 +55,9 @@ public class LoginPortalSSOTest extends DSUIIntegrationTest {
     public void testSSOLoginToPortal() throws Exception {
         // register portal application by using configuration files
         registerPortalApplication();
-
         // setting authentication method to sso in designer json file
-        enableSSOLogin();
-
-        loginWithSSO(getCurrentUsername(), getCurrentPassword());
+        setLoginMethod("sso");
+        login(getCurrentUsername(), getCurrentPassword());
     }
 
     /**
@@ -97,8 +76,7 @@ public class LoginPortalSSOTest extends DSUIIntegrationTest {
     @AfterClass(alwaysRun = true)
     public void tearDown() throws Exception {
         // set authentication method back to basic
-        enableBasicLogin();
-
+        setLoginMethod("basic");
         getDriver().quit();
     }
 
@@ -107,80 +85,59 @@ public class LoginPortalSSOTest extends DSUIIntegrationTest {
      * @throws Exception
      */
     private void registerPortalApplication() throws Exception {
+        String carbonHome = FrameworkPathUtil.getCarbonHome();
+        String systemResourceLocation = FrameworkPathUtil.getSystemResourceLocation();
         String pathToSSOIdpConfig = systemResourceLocation + "identity" + File.separator + "sso-idp-config.xml";
         String targetSSOIdpConfig = carbonHome + File.separator + "repository" + File.separator + "conf" + File.separator +
                 "identity" + File.separator + "sso-idp-config.xml";
-
         String pathToPortal = systemResourceLocation + "identity" + File.separator + "service-providers" +
                 File.separator + "portal.xml";
         String targetToPortal = carbonHome + File.separator + "repository" + File.separator + "conf" + File.separator +
                 "identity" + File.separator + "service-providers" + File.separator + "portal.xml";
-
         AutomationContext automationContext = new AutomationContext(DSIntegrationTestConstants.DS_PRODUCT_NAME, this.userMode);
         ServerConfigurationManager serverConfigurationManager = new ServerConfigurationManager(automationContext);
-
         // copy files
         serverConfigurationManager.applyConfigurationWithoutRestart(new File(pathToSSOIdpConfig),
                 new File(targetSSOIdpConfig), false);
         serverConfigurationManager.applyConfigurationWithoutRestart(new File(pathToPortal), new File(targetToPortal), false);
-
         // restart the server to activate configuration files
         serverConfigurationManager.restartGracefully();
     }
 
     /**
-     * Enable sso in portal by configuring designer json file
+     * Set login method by configuring designer json file. The {@code method} argument must specify a valid login method,
+     * otherwise it will be set to {@code basic} login.
+     * @param method a valid login method. Should be either {@code sso} or {@code basic}
      * @throws Exception
      */
-    private void enableSSOLogin() throws Exception {
-        File f = new File(designerFilePath);
-        BufferedReader br = new BufferedReader(new FileReader(f));
-        StringBuilder sb = new StringBuilder();
-
-        JSONObject designerJson;
-        PrintWriter pw;
-
-        while(br.ready()){
-            sb.append(br.readLine());
+    public void setLoginMethod(String method) throws Exception {
+        PrintWriter pw = null;
+        if ((method == null) || !(method.toLowerCase().equals("basic") || method.toLowerCase().equals("sso"))) {
+            method = "basic";
         }
-        br.close();
-
-        // convert json string to json object
-        designerJson = new JSONObject(sb.toString());
-        // set active method to sso
-        designerJson.getJSONObject("authentication").put("activeMethod", "sso");
-
-        pw = new PrintWriter(f);
-        pw.println(designerJson.toString());
-        pw.flush();
-        pw.close();
-    }
-
-    /**
-     * Enable basic login in portal by configuring designer json file
-     * @throws Exception
-     */
-    public void enableBasicLogin() throws Exception{
-        File f = new File(designerFilePath);
-        BufferedReader br = new BufferedReader(new FileReader(f));
-        StringBuilder sb = new StringBuilder();
-
-        JSONObject designerJson;
-        PrintWriter pw;
-
-        while(br.ready()){
-            sb.append(br.readLine());
+        try {
+            String designerFilePath = FrameworkPathUtil.getCarbonHome() + File.separator + "repository" + File.separator + "deployment" +
+                    File.separator + "server" + File.separator + "jaggeryapps" + File.separator + "portal" +
+                    File.separator + "configs" + File.separator + "designer.json";
+            File f = new File(designerFilePath);
+            BufferedReader br = new BufferedReader(new FileReader(f));
+            StringBuilder sb = new StringBuilder();
+            JSONObject designerJson;
+            while (br.ready()) {
+                sb.append(br.readLine());
+            }
+            br.close();
+            // convert json string to json object
+            designerJson = new JSONObject(sb.toString());
+            // set active method
+            designerJson.getJSONObject("authentication").put("activeMethod", method);
+            pw = new PrintWriter(f);
+            pw.println(designerJson.toString());
+            pw.flush();
+        } finally {
+            if (pw != null) {
+                pw.close();
+            }
         }
-        br.close();
-
-        // convert json string to json object
-        designerJson = new JSONObject(sb.toString());
-        // set active method back to basic
-        designerJson.getJSONObject("authentication").put("activeMethod", "basic");
-
-        pw = new PrintWriter(f);
-        pw.println(designerJson.toString());
-        pw.flush();
-        pw.close();
     }
 }

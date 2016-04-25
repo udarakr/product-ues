@@ -36,7 +36,7 @@ var initLineChart = null;
             height = state.height - margin.top - margin.bottom,
 
             svg, xScale, yScale, xAxis, yAxis,
-            xGroup, yGroup, line, tooltip,
+            xGroup, yGroup, line, toolTip,
             subscribeData,
 
             STATE_CHANNEL = "state",
@@ -66,40 +66,45 @@ var initLineChart = null;
 
         /*
          * Initialize the user interface functionality.
+		 * @return {null}
          * @private
-         * */
+         */
         var initUI = function () {
             xScale = createXScale();
             yScale = createYScale();
             xAxis = createXAxis(xScale);
             yAxis = createYAxis(yScale);
             svg = createSVG();
-            line = createALine(xScale,yScale);
-            tooltip = createToolTip();
+            line = createALine(xScale, yScale);
+            toolTip = createToolTip();
 
-            var dataBundle = {
-                data: "US",
-                state: "US"
-            };
-            callbackForSubscribers(dataBundle);
+            // Get the state from the gadget state if possible.
+            wso2.gadgets.state.getGadgetState(function(gadgetState) {
+                gadgetState = gadgetState || { };
+                gadgetState.state = gadgetState.state || 'US';
+                callbackForSubscribers(gadgetState);
+            });
 
             // Initialize the subscriber to listen to the subscribed channel.
             gadgets.HubSettings.onConnect = function () {
                 // Subscribe to the state channel
                 gadgets.Hub.subscribe(STATE_CHANNEL, function (topic, message) {
                     callbackForSubscribers(message);
+                    wso2.gadgets.state.setGadgetState({state: message.state});
                 });
             };
         };
 
         /*
          * Callback for the subscriber.
+		 * @param {Object} message Message received
+		 * @return {null}
          * @private
-         * */
+         */
         var callbackForSubscribers = function (message) {
             if (message) {
                 subscribeData = message;
-                var populationHistoryData = getPopulationHistoryByState(message.data);
+                var populationHistoryData = getPopulationHistoryByState(message.state);
                 update(populationHistoryData);
             }
         };
@@ -158,7 +163,7 @@ var initLineChart = null;
          * Create the line.
          * @private
          * */
-        var createALine = function (scaleX,scaleY) {
+        var createALine = function (scaleX, scaleY) {
             return d3.svg.line()
                 .x(function (d) {
                     return scaleX(d.year);
@@ -211,11 +216,13 @@ var initLineChart = null;
 
         /*
          * Publish history data.
+		 * @param {Number} year Year to be published
+		 * @return {null}
          * @private
-         * */
+         */
         var publishHistoryData = function (year) {
             var dataBundle = {
-                data: year,
+                year: year,
                 state: subscribeData.state
             };
 
@@ -236,7 +243,7 @@ var initLineChart = null;
 
             d3.select("svg").remove();
             svg = createSVG();
-            line = createALine(xScale,yScale);
+            line = createALine(xScale, yScale);
 
             xScale.domain(d3.extent(dataToProcess, function (d) {
                 return d.year;
@@ -252,8 +259,8 @@ var initLineChart = null;
             yGroup = createYAxisGroup(svg);
 
             d3.select(".x.axis").append("text")
-                .attr("x",width)
-                .attr("y",-2)
+                .attr("x", width)
+                .attr("y", -2)
                 .style("text-anchor", "end")
                 .text("Year");
 
@@ -287,10 +294,10 @@ var initLineChart = null;
                         .duration(200)
                         .attr("r", 10);
 
-                    tooltip.transition()
+                    toolTip.transition()
                         .duration(200)
                         .style("opacity", .9);
-                    tooltip.html("Year: " + d.year.getFullYear() + "<br/>" + "Pop: " + this.__data__.currentPopulation)
+                    toolTip.html("Year: " + d.year.getFullYear() + "<br/>" + "Pop: " + this.__data__.currentPopulation)
                         .style("left", function () {
                             if ((d3.event.pageX + 100) > state.width) {
                                 return (d3.event.pageX - 100) + "px";
@@ -313,7 +320,7 @@ var initLineChart = null;
                         .duration(200)
                         .attr("r", 5);
 
-                    tooltip.transition()
+                    toolTip.transition()
                         .duration(200)
                         .style("opacity", 0);
                 })
@@ -325,8 +332,7 @@ var initLineChart = null;
             var totalLength = path.node().getTotalLength();
 
             // Animate the drawing of the path.
-            path
-                .attr("stroke-dasharray", totalLength + " " + totalLength)
+            path.attr("stroke-dasharray", totalLength + " " + totalLength)
                 .attr("stroke-dashoffset", totalLength)
                 .transition()
                 .duration(500)

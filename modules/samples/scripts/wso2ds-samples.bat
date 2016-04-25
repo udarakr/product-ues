@@ -1,7 +1,7 @@
 @echo off
 
 REM ---------------------------------------------------------------------------
-REM        Copyright 2005-2009 WSO2, Inc. http://www.wso2.org
+REM  Copyright 2016 WSO2, Inc. http://www.wso2.org
 REM
 REM  Licensed under the Apache License, Version 2.0 (the "License");
 REM  you may not use this file except in compliance with the License.
@@ -36,6 +36,7 @@ SET script=%~dp0
 rem Defining Sample data and directories' paths
 set gadgetDropLocation=%script%..\repository\deployment\server\jaggeryapps\portal\store\carbon.super\gadget
 set dashboardDropLocation=%script%..\repository\deployment\server\jaggeryapps\portal\extensions\dashboards
+set jaggeryappDropLocation=%script%..\repository\deployment\server\jaggeryapps
 
 set cn=%1
 set UserInputValue=%2
@@ -62,6 +63,7 @@ set sampleFolder=%script%..\samples\s%UserInputValue%
 
 xcopy "%sampleFolder%\gadget\*" "%gadgetDropLocation%" /e /i /h /Y
 xcopy "%sampleFolder%\dashboards\*" "%dashboardDropLocation%" /Y
+xcopy "%sampleFolder%\jaggeryapps\*" "%jaggeryappDropLocation%" /e /i /h /Y
 
 echo "Starting the dashboard server with sample dashboard"
 wso2server.bat

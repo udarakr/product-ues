@@ -61,19 +61,19 @@ var initBarChart;
                     data: dataToAdd,
                     next: null
                 },
-                next_node;
+                nextNode;
 
             if (!head) {
                 head = node;
                 current = head;
                 length++;
             } else {
-                next_node = head;
-                while (next_node.next) {
-                    next_node = next_node.next;
+                nextNode = head;
+                while (nextNode.next) {
+                    nextNode = nextNode.next;
                 }
-                node.previous = next_node;
-                next_node.next = node;
+                node.previous = nextNode;
+                nextNode.next = node;
                 current = node;
                 length++;
             }
@@ -84,9 +84,9 @@ var initBarChart;
          * @private
          * */
         var removeCurrent = function () {
-            var prev_node = current.previous;
-            prev_node.next = null;
-            current = prev_node;
+            var prevNode = current.previous;
+            prevNode.next = null;
+            current = prevNode;
         };
 
         /*
@@ -115,15 +115,15 @@ var initBarChart;
          * Get the name of state by state id.
          * @private
          * */
-        var getStateNameByStateId = function(stateId){
+        var getStateNameByStateId = function (stateId) {
             var name = "";
 
-            $.each(USA_DEMOGRAPHICS_SAMPLE_DATA,function(index,element){
-               if(element.id == stateId){
-                   var history = element.populationHistory[0];
-                   name = history.name;
-                   return false;
-               }
+            $.each(USA_DEMOGRAPHICS_SAMPLE_DATA, function (index, element) {
+                if (element.id == stateId) {
+                    var history = element.populationHistory[0];
+                    name = history.name;
+                    return false;
+                }
             });
 
             return name;
@@ -131,8 +131,9 @@ var initBarChart;
 
         /*
          * Initialize the user interface functionality.
+		 * @return {null}
          * @private
-         * */
+         */
         var initUI = function () {
             state.btnBack.click(backEvent);
             state.btnBack.hide();
@@ -148,12 +149,34 @@ var initBarChart;
             xAxisGroup = createXAxisGroup(chartGroup, xAxis);
             yAxisGroup = createYAxisGroup(chartGroup, yAxis);
             barGroup = createBarGroup(chartGroup, USA_DEMOGRAPHICS_SAMPLE_DATA[0].populationAgeGender);
-
-            createBarChart(USA_DEMOGRAPHICS_SAMPLE_DATA[0].populationAgeGender, null, "US", false);
+            
+            // restore the gadget state if available
+            wso2.gadgets.state.getGadgetState(function(gadgetState) {
+                gadgetState = gadgetState || { };
+                gadgetState.state = gadgetState.state ? gadgetState.state.toUpperCase() : 'US';
+                
+                var ageData = getAgeDetailsByState(gadgetState.state);
+                createBarChart(ageData, null, gadgetState.state, false);
+                
+                if (gadgetState.age) {
+                    var rects = d3.selectAll('rect')[0];
+                    for(var i = 0; i < rects.length; i++) {
+                        if (rects[i].__data__.name == gadgetState.age) {
+                            var rect = rects[i].__data__;
+                            if (rect.category.length > 0) {
+                                $("#back").show();
+                                createBarChart(rect.category, rect.name, gadgetState.state, false);
+                            }
+                            break;
+                        }
+                    }
+                }
+            });
 
             gadgets.HubSettings.onConnect = function () {
                 // Subscribe to the state channel.
                 gadgets.Hub.subscribe(STATE_CHANNEL, function (topic, message) {
+                    updateGadgetState({ state: message.state });
                     callbackForChannels(message);
                 });
             };
@@ -161,14 +184,16 @@ var initBarChart;
 
         /*
          * Callback function for channels.
+		 * @param {Object} message Message received
+		 * @return {null}
          * @private
-         * */
+         */
         var callbackForChannels = function (message) {
             if (message) {
                 subscribeData = message;
                 initLinkedList();
                 $("#back").hide();
-                var ageData = getAgeDetailsByState(message.data);
+                var ageData = getAgeDetailsByState(message.state);
                 createBarChart(ageData, null, message.state, false);
             }
         };
@@ -193,7 +218,7 @@ var initBarChart;
          * @private
          * */
         var createColor = function () {
-            var getColor = function(){
+            var getColor = function () {
                 return "rgb(31, 119, 180)";
             };
             return getColor;
@@ -309,24 +334,55 @@ var initBarChart;
         };
 
         /*
-         * Publish the age details
+         * Publish the age details.
+         * @param {String} dataToSend Data to be sent
+         * @param {String} age Age range if available
+         * @return {null}
          * @private
-         * */
+         */
         var publishAgeDetails = function (dataToSend, age) {
-            var dataBundle = {
-                data: dataToSend,
-                age: age,
-                state: subscribeData ? subscribeData.state : "US"
-            };
-
             if (age) {
                 // Publish the selected Gender details.
-                gadgets.Hub.publish(GENDER_CHANNEL, dataBundle);
+                gadgets.Hub.publish(GENDER_CHANNEL, {
+                    gender: dataToSend,
+                    age: dataToSend,
+                    state: subscribeData ? subscribeData.state : 'US'
+                });
+                updateGadgetState({ gender: dataToSend })
             } else {
                 // Publish the selected Age details.
-                gadgets.Hub.publish(AGE_CHANNEL, dataBundle);
+                gadgets.Hub.publish(AGE_CHANNEL, {
+                    age: dataToSend,
+                    state: subscribeData ? subscribeData.state : 'US'
+                });
+                updateGadgetState({ age: dataToSend })
             }
         };
+        
+        /**
+         * Update gadget state.
+         * @param {Object} s Gadget state
+         * @return {null}
+         * @private
+         */
+        var updateGadgetState = function(s) {
+            wso2.gadgets.state.getGadgetState(function(gadgetState) {
+                gadgetState = gadgetState || { };
+                gadgetState.state = gadgetState.state || 'US';
+                var newState = {
+                    state: s.state || gadgetState.state
+                };
+                
+                if (s.age) {
+                    newState.age = s.age;
+                } else if (s.gender) {
+                    newState.age = gadgetState.age;
+                    newState.gender = s.gender;
+                }
+                // Update the gadget state
+                wso2.gadgets.state.setGadgetState(newState);
+            })
+        }
 
         /*
          * Create Bar chart.
@@ -377,9 +433,9 @@ var initBarChart;
 
             svg.select(".x.axis")
                 .append("text")
-                .attr("class","axis-label")
-                .attr("x",width+10)
-                .attr("y",15)
+                .attr("class", "axis-label")
+                .attr("x", width + 10)
+                .attr("y", 15)
                 .style("text-anchor", "end")
                 .text("age");
 
@@ -393,17 +449,17 @@ var initBarChart;
             rectangles = barGroup.selectAll(".bar").data(dataToProcess);
             rectangles.enter().append("rect")
                 .attr("class", "bar")
-                .attr("width", function(){
-                    if(dataToProcess.length == 2){
-                        return xScale.rangeBand()/4;
-                    }else {
+                .attr("width", function () {
+                    if (dataToProcess.length == 2) {
+                        return xScale.rangeBand() / 4;
+                    } else {
                         return xScale.rangeBand();
                     }
                 })
                 .attr("x", function (d) {
-                    if(dataToProcess.length == 2) {
-                        return xScale(d.name)+xScale.rangeBand()/2.5;
-                    }else{
+                    if (dataToProcess.length == 2) {
+                        return xScale(d.name) + xScale.rangeBand() / 2.5;
+                    } else {
                         return xScale(d.name);
                     }
                 })
@@ -440,17 +496,17 @@ var initBarChart;
                         .attr("fill", function (d) {
                             return "rgb(107, 153, 185)";
                         })
-                        .attr("width", function(){
-                            if(dataToProcess.length == 2){
-                                return xScale.rangeBand()/4;
-                            }else {
+                        .attr("width", function () {
+                            if (dataToProcess.length == 2) {
+                                return xScale.rangeBand() / 4;
+                            } else {
                                 return xScale.rangeBand();
                             }
                         })
                         .attr("x", function (d) {
-                            if(dataToProcess.length == 2) {
-                                return xScale(d.name)+xScale.rangeBand()/2.5;
-                            }else{
+                            if (dataToProcess.length == 2) {
+                                return xScale(d.name) + xScale.rangeBand() / 2.5;
+                            } else {
                                 return xScale(d.name);
                             }
                         })
@@ -468,17 +524,17 @@ var initBarChart;
                         .attr("fill", function (d) {
                             return "rgb(31, 119, 180)";
                         })
-                        .attr("width", function(){
-                            if(dataToProcess.length == 2){
-                                return xScale.rangeBand()/4;
-                            }else {
+                        .attr("width", function () {
+                            if (dataToProcess.length == 2) {
+                                return xScale.rangeBand() / 4;
+                            } else {
                                 return xScale.rangeBand();
                             }
                         })
                         .attr("x", function (d) {
-                            if(dataToProcess.length == 2) {
-                                return xScale(d.name)+xScale.rangeBand()/2.5;
-                            }else{
+                            if (dataToProcess.length == 2) {
+                                return xScale(d.name) + xScale.rangeBand() / 2.5;
+                            } else {
                                 return xScale(d.name);
                             }
                         })
