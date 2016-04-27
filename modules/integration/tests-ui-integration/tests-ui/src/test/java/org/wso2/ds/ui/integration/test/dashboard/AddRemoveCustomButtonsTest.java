@@ -84,7 +84,7 @@ public class AddRemoveCustomButtonsTest extends DSUIIntegrationTest {
      *
      * @throws Exception
      */
-    @Test(groups = "wso2.ds.dashboard", description = "Adding custom functions to gadget title bar")
+    @Test(groups = "wso2.ds.dashboard", description = "Adding custom functions to gadget title bar", enabled = false)
     public void testCustomButtonsGadgeTitlebar() throws Exception {
         DSWebDriver driver = getDriver();
         addDashBoard(DASHBOARD_TITLE, DASHBOARD_DESCRIPTION);
@@ -119,7 +119,7 @@ public class AddRemoveCustomButtonsTest extends DSUIIntegrationTest {
      */
     @Test(groups = "wso2.ds.dashboard", description = "Hide dafault buttons on gadget title-bar on view mode of " +
             "dashboard",
-            dependsOnMethods = "testCustomButtonsGadgeTitlebar")
+            dependsOnMethods = "testCustomButtonsGadgeTitlebar", enabled = false)
     public void testDefaultButtonsGadgetTitlebar() throws Exception {
         DSWebDriver driver = getDriver();
         JSONObject gadgetJsonObj = getGadgetJSONObject();
@@ -149,8 +149,8 @@ public class AddRemoveCustomButtonsTest extends DSUIIntegrationTest {
         String carbonHome = FrameworkPathUtil.getCarbonHome();
         String fileName = carbonHome + File.separator + "repository" + File.separator + "deployment" +
                 File.separator + "server" + File.separator + "jaggeryapps" + File.separator + "portal" +
-                File.separator + "store" + File.separator + "carbon.super" + File.separator + "gadget" + File
-                .separator + GADGET_NAME + File.separator + "gadget.json";
+                File.separator + "store" + File.separator + "carbon.super" +  File.separator + "fs" + File.separator  +
+                "gadget" + File.separator + GADGET_NAME + File.separator + "gadget.json";
         JSONParser parser = new JSONParser();
         Object fileObj = parser.parse(new FileReader(fileName));
         return (JSONObject) fileObj;
